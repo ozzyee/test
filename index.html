@@ -6,11 +6,11 @@
     <title>Add to Calendar</title>
   </head>
   <body>
-    <button id="download-ics">Download Calendar Event (.ics)</button>
+    <button id="add-to-calendar">Add to Calendar</button>
 
     <script>
       document
-        .getElementById("download-ics")
+        .getElementById("add-to-calendar")
         .addEventListener("click", function () {
           // Array of multiple events
           const events = [
@@ -18,58 +18,85 @@
               title: "Event 1",
               details: "Details about event 1.",
               location: "Location 1",
-              start: "2024-10-25T09:00:00",
-              end: "2024-10-25T10:00:00",
+              start: "2024-10-25T09:00:00Z",
+              end: "2024-10-25T10:00:00Z",
             },
             {
               title: "Event 2",
               details: "Details about event 2.",
               location: "Location 2",
-              start: "2024-10-26T11:00:00",
-              end: "2024-10-26T12:00:00",
+              start: "2024-10-26T11:00:00Z",
+              end: "2024-10-26T12:00:00Z",
             },
             // Add more events if needed
           ];
 
-          // Create .ics content
-          let icsContent =
-            "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Your Company//NONSGML v1.0//EN\n";
+          // Check the platform and open the appropriate calendar option
+          const userAgent = navigator.userAgent.toLowerCase();
+          const isIOS = /iphone|ipad|ipod/.test(userAgent);
+          const isAndroid = /android/.test(userAgent);
+          const isWindows = /windows/.test(userAgent);
 
           events.forEach((event) => {
             const startDate =
               new Date(event.start)
                 .toISOString()
                 .replace(/[-:.]/g, "")
-                .slice(0, 15) + "Z";
+                .replace(/Z$/, "") + "Z";
             const endDate =
               new Date(event.end)
                 .toISOString()
                 .replace(/[-:.]/g, "")
-                .slice(0, 15) + "Z";
+                .replace(/Z$/, "") + "Z";
 
-            icsContent += `
-BEGIN:VEVENT
-SUMMARY:${event.title}
-DESCRIPTION:${event.details}
-LOCATION:${event.location}
-DTSTART:${startDate}
-DTEND:${endDate}
-END:VEVENT
-`;
+            // Google Calendar URL
+            const googleCalendarUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
+              event.title
+            )}&details=${encodeURIComponent(
+              event.details
+            )}&location=${encodeURIComponent(
+              event.location
+            )}&dates=${startDate}/${endDate}`;
+
+            // Outlook Calendar URL
+            const outlookCalendarUrl = `https://outlook.office.com/calendar/0/deeplink/compose?subject=${encodeURIComponent(
+              event.title
+            )}&body=${encodeURIComponent(
+              event.details
+            )}&location=${encodeURIComponent(event.location)}&startdt=${
+              event.start
+            }&enddt=${event.end}`;
+
+            // Apple Calendar - Generate .ics file
+            const appleCalendarIcs = `BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Your Company//NONSGML v1.0//EN\nBEGIN:VEVENT\nSUMMARY:${event.title}\nDESCRIPTION:${event.details}\nLOCATION:${event.location}\nDTSTART:${startDate}\nDTEND:${endDate}\nEND:VEVENT\nEND:VCALENDAR`;
+
+            if (isIOS) {
+              // iOS - Trigger download of .ics file
+              const blob = new Blob([appleCalendarIcs], {
+                type: "text/calendar",
+              });
+              const link = document.createElement("a");
+              link.href = URL.createObjectURL(blob);
+              link.download = `${event.title}.ics`;
+              link.click();
+            } else if (isAndroid || isWindows) {
+              // Android or Windows - Open Google Calendar or Outlook Calendar
+              if (window.confirm("Open in Google Calendar?")) {
+                window.open(googleCalendarUrl, "_blank");
+              } else {
+                window.open(outlookCalendarUrl, "_blank");
+              }
+            } else {
+              // For other platforms (e.g., macOS), also trigger .ics file download as fallback
+              const blob = new Blob([appleCalendarIcs], {
+                type: "text/calendar",
+              });
+              const link = document.createElement("a");
+              link.href = URL.createObjectURL(blob);
+              link.download = `${event.title}.ics`;
+              link.click();
+            }
           });
-
-          icsContent += "END:VCALENDAR";
-
-          // Create a blob with the .ics content
-          const blob = new Blob([icsContent], { type: "text/calendar" });
-
-          // Create a download link for the .ics file
-          const link = document.createElement("a");
-          link.href = URL.createObjectURL(blob);
-          link.download = "events.ics";
-
-          // Simulate a click on the link to trigger the download
-          link.click();
         });
     </script>
   </body>
