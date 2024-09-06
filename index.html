@@ -3,14 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Add Multiple Events to Calendar</title>
+    <title>Add to Calendar</title>
   </head>
   <body>
-    <button id="add-to-calendar">Add to Calendar</button>
+    <button id="download-ics">Download Calendar Event (.ics)</button>
 
     <script>
       document
-        .getElementById("add-to-calendar")
+        .getElementById("download-ics")
         .addEventListener("click", function () {
           // Array of multiple events
           const events = [
@@ -18,74 +18,58 @@
               title: "Event 1",
               details: "Details about event 1.",
               location: "Location 1",
-              start: "2024-10-25T09:00:00Z",
-              end: "2024-10-25T10:00:00Z",
+              start: "2024-10-25T09:00:00",
+              end: "2024-10-25T10:00:00",
             },
             {
               title: "Event 2",
               details: "Details about event 2.",
               location: "Location 2",
-              start: "2024-10-26T11:00:00Z",
-              end: "2024-10-26T12:00:00Z",
+              start: "2024-10-26T11:00:00",
+              end: "2024-10-26T12:00:00",
             },
-            // Add more events as needed
+            // Add more events if needed
           ];
 
+          // Create .ics content
+          let icsContent =
+            "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Your Company//NONSGML v1.0//EN\n";
+
           events.forEach((event) => {
-            // Format date and time for Google Calendar and Outlook Calendar
-            const start =
+            const startDate =
               new Date(event.start)
                 .toISOString()
                 .replace(/[-:.]/g, "")
-                .replace(/Z$/, "") + "Z";
-            const end =
+                .slice(0, 15) + "Z";
+            const endDate =
               new Date(event.end)
                 .toISOString()
                 .replace(/[-:.]/g, "")
-                .replace(/Z$/, "") + "Z";
+                .slice(0, 15) + "Z";
 
-            // URLs for different platforms
-            const googleCalendarUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
-              event.title
-            )}&details=${encodeURIComponent(
-              event.details
-            )}&location=${encodeURIComponent(
-              event.location
-            )}&dates=${start}/${end}`;
-
-            const outlookCalendarUrl = `https://outlook.office.com/calendar/0/deeplink/compose?subject=${encodeURIComponent(
-              event.title
-            )}&body=${encodeURIComponent(
-              event.details
-            )}&location=${encodeURIComponent(event.location)}&startdt=${
-              event.start
-            }&enddt=${event.end}`;
-
-            const appleCalendarUrl = `data:text/calendar;charset=utf8,BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//hacksw/handcal//NONSGML v1.0//EN\nBEGIN:VEVENT\nSUMMARY:${
-              event.title
-            }\nDESCRIPTION:${event.details}\nLOCATION:${
-              event.location
-            }\nDTSTART:${start.replace(/Z$/, "")}\nDTEND:${end.replace(
-              /Z$/,
-              ""
-            )}\nEND:VEVENT\nEND:VCALENDAR`;
-
-            // Offer different options depending on platform
-            let calendarOptions = `
-              <h3>${event.title}</h3>
-              <p><strong>Choose your calendar platform:</strong></p>
-              <ul>
-                <li><a href="${googleCalendarUrl}" target="_blank">Google Calendar</a></li>
-                <li><a href="${outlookCalendarUrl}" target="_blank">Outlook Calendar</a></li>
-                <li><a href="${appleCalendarUrl}" download="${event.title}.ics">Apple Calendar (Download .ics)</a></li>
-              </ul>
-            `;
-
-            // Display options to user
-            const calendarContainer = document.createElement("div");
-            calendarContainer.innerHTML = calendarOptions;
-            document.body.appendChild(calendarContainer);
+            icsContent += `
+BEGIN:VEVENT
+SUMMARY:${event.title}
+DESCRIPTION:${event.details}
+LOCATION:${event.location}
+DTSTART:${startDate}
+DTEND:${endDate}
+END:VEVENT
+`;
           });
+
+          icsContent += "END:VCALENDAR";
+
+          // Create a blob with the .ics content
+          const blob = new Blob([icsContent], { type: "text/calendar" });
+
+          // Create a download link for the .ics file
+          const link = document.createElement("a");
+          link.href = URL.createObjectURL(blob);
+          link.download = "events.ics";
+
+          // Simulate a click on the link to trigger the download
+          link.click();
         });
     </script>
   </body>
