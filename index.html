@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Add Multiple Events to Calendar</title>
+  </head>
+  <body>
+    <button id="add-to-calendar">Add to Calendar</button>
+
+    <script>
+      document
+        .getElementById("add-to-calendar")
+        .addEventListener("click", function () {
+          // Array of multiple events
+          const events = [
+            {
+              title: "Event 1",
+              details: "Details about event 1.",
+              location: "Location 1",
+              start: "2024-10-25T09:00:00Z",
+              end: "2024-10-25T10:00:00Z",
+            },
+            {
+              title: "Event 2",
+              details: "Details about event 2.",
+              location: "Location 2",
+              start: "2024-10-26T11:00:00Z",
+              end: "2024-10-26T12:00:00Z",
+            },
+            // Add more events as needed
+          ];
+
+          events.forEach((event) => {
+            // Format date and time for Google Calendar
+            const start =
+              new Date(event.start)
+                .toISOString()
+                .replace(/[-:.]/g, "")
+                .replace(/Z$/, "") + "Z";
+            const end =
+              new Date(event.end)
+                .toISOString()
+                .replace(/[-:.]/g, "")
+                .replace(/Z$/, "") + "Z";
+
+            // Google Calendar URL for each event
+            const googleCalendarUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
+              event.title
+            )}&details=${encodeURIComponent(
+              event.details
+            )}&location=${encodeURIComponent(
+              event.location
+            )}&dates=${start}/${end}`;
+
+            // Open each event's Google Calendar URL in a new tab
+            window.open(googleCalendarUrl, "_blank");
+          });
+        });
+    </script>
+  </body>
+</html>
