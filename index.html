@@ -32,7 +32,7 @@
           ];
 
           events.forEach((event) => {
-            // Format date and time for Google Calendar
+            // Format date and time for Google Calendar and Outlook Calendar
             const start =
               new Date(event.start)
                 .toISOString()
@@ -44,7 +44,7 @@
                 .replace(/[-:.]/g, "")
                 .replace(/Z$/, "") + "Z";
 
-            // Google Calendar URL for each event
+            // URLs for different platforms
             const googleCalendarUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
               event.title
             )}&details=${encodeURIComponent(
@@ -53,8 +53,38 @@
               event.location
             )}&dates=${start}/${end}`;
 
-            // Open each event's Google Calendar URL in a new tab
-            window.open(googleCalendarUrl, "_blank");
+            const outlookCalendarUrl = `https://outlook.office.com/calendar/0/deeplink/compose?subject=${encodeURIComponent(
+              event.title
+            )}&body=${encodeURIComponent(
+              event.details
+            )}&location=${encodeURIComponent(event.location)}&startdt=${
+              event.start
+            }&enddt=${event.end}`;
+
+            const appleCalendarUrl = `data:text/calendar;charset=utf8,BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//hacksw/handcal//NONSGML v1.0//EN\nBEGIN:VEVENT\nSUMMARY:${
+              event.title
+            }\nDESCRIPTION:${event.details}\nLOCATION:${
+              event.location
+            }\nDTSTART:${start.replace(/Z$/, "")}\nDTEND:${end.replace(
+              /Z$/,
+              ""
+            )}\nEND:VEVENT\nEND:VCALENDAR`;
+
+            // Offer different options depending on platform
+            let calendarOptions = `
+              <h3>${event.title}</h3>
+              <p><strong>Choose your calendar platform:</strong></p>
+              <ul>
+                <li><a href="${googleCalendarUrl}" target="_blank">Google Calendar</a></li>
+                <li><a href="${outlookCalendarUrl}" target="_blank">Outlook Calendar</a></li>
+                <li><a href="${appleCalendarUrl}" download="${event.title}.ics">Apple Calendar (Download .ics)</a></li>
+              </ul>
+            `;
+
+            // Display options to user
+            const calendarContainer = document.createElement("div");
+            calendarContainer.innerHTML = calendarOptions;
+            document.body.appendChild(calendarContainer);
           });
         });
     </script>
